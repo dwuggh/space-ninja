@@ -1,0 +1,19 @@
+{
+  "name": "space-ninja",
+  "version": "1.0.0",
+  "description": "space ninja game",
+  "main": "index.js",
+  "scripts": {
+    "dev": "http-server . -p 8000",
+	"lint": "eslint . --fix"
+  },
+  "keywords": [
+    "game"
+  ],
+  "author": "dwuggh",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^7.18.0",
+    "http-server": "^0.12.3"
+  }
+}
