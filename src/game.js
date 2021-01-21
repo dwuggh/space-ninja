@@ -17,7 +17,8 @@ function draw() {
     board = new Board(M, N, 'game-canvas')
     gameStat = new GameStat(M, N)
     window.addEventListener('resize', resizeCanvas, false)
-	requestAnimationFrame(animate)
+    canvas.addEventListener('click', clickHandler)
+    requestAnimationFrame(animate)
   }
 }
 
@@ -31,6 +32,18 @@ function resizeCanvas() {
   canvas.width = window.innerWidth - 50
   canvas.height = window.innerHeight - 50
   board.draw()
+}
+
+function clickHandler(event) {
+  const canvas = document.getElementById('game-canvas')
+  const r = 10
+  const x = event.pageX - ( canvas.offsetLeft + canvas.clientLeft )
+  const y = event.pageY - ( canvas.offsetTop + canvas.clientTop )
+  if (board.inRange(x, y, r)) {
+    const m = board.getM(y)
+    const n = board.getN(x)
+    gameStat.move(m, n)
+  }
 }
 
 // render the game board inside a canvas
@@ -54,7 +67,6 @@ class Board {
   draw(gs) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.ctx.fillStyle = 'rgb(0, 0, 0)'
-    this.drawGrid()
 
     for (let m = 0; m < this.M; m++) {
       for (let n = 0; n < this.N; n++) {
@@ -65,11 +77,12 @@ class Board {
       }
     }
 
+    this.drawGrid()
+
     for (let m = 0; m < this.M + 1; m++) {
       for (let n = 0; n < this.N + 1; n++) {
         const c = gs.chesses[m][n]
         if (c !== null) {
-          // console.log(c)
           this.drawChess(c.m, c.n, c.player)
         }
       }
@@ -125,6 +138,25 @@ class Board {
   getY(m) {
     return this.margin + m * this.gridSpacing
   }
+
+  getM(y) {
+    return Math.round((y - this.margin) / this.gridSpacing)
+  }
+
+  getN(x) {
+    return Math.round((x - this.margin) / this.gridSpacing)
+  }
+
+  inRange(x, y, r) {
+    if (x > this.margin + this.N * this.gridSpacing + r || y > this.margin + this.M * this.gridSpacing + r) {
+      return false
+    }
+    const dx = x - this.margin - this.getN(x) * this.gridSpacing
+    const dy = y - this.margin - this.getM(y) * this.gridSpacing
+    // const dy = (y - this.margin) % this.gridSpacing
+    const dr2 = dx * dx + dy * dy
+    return dr2 < r * r
+  }
 }
 
 class GameStat {
@@ -132,14 +164,14 @@ class GameStat {
     this.M = M
     this.N = N
     /*
-		  moves & chesses contain objects in the following form:
-		  move : {
-		      count: number,
-			  player: number,
-			  x: number,
-			  y: number
-		  }
-		 */
+          moves & chesses contain objects in the following form:
+          move : {
+              count: number,
+              player: number,
+              x: number,
+              y: number
+          }
+         */
     this.moves = []
     this.boundary = []
     this.score = [0, 0]
@@ -233,9 +265,9 @@ class GameStat {
     // return this.boundary.find(val => val === (m, n))
     let c = []
     if (m > 0) { c.push(this.chesses[m - 1][n]) }
-    if (m < this.M - 1) { c.push(this.chesses[m + 1][n]) }
+    if (m < this.M) { c.push(this.chesses[m + 1][n]) }
     if (n > 0) { c.push(this.chesses[m][n - 1]) }
-    if (n < this.N - 1) { c.push(this.chesses[m][n + 1]) }
+    if (n < this.N) { c.push(this.chesses[m][n + 1]) }
     // if find chess around the position
     return c.reduce((x, y) => x || y) != null
   }
